@@ -1,0 +1,59 @@
+import java.util.Random;
+
+public class Model{
+	public static void main(String[] args) {
+		int[] iniState = new int[15];		//wrzuciłem te wszystkie tabele co były w matlabie
+		int[] syncWord = new int[] {1,1,1,1,1}; //bez waszych funkcji i tak nie mogę więcej
+		int[] firstTest = new int[1000];
+		int[] zeros = new int[1000];
+		int[] firstWithSync = new int[1500];
+		int[] firstTrans = new int[1500];
+		int[]test = new int[1500];
+		int mistakes=0;
+		
+		Random generator = new Random();
+		
+		for(int i=0; i<15; i++) 
+			iniState[i] = generator.nextInt(2);
+		
+		for(int i=0; i<1000; i++)
+			zeros[i] = 0;
+		
+		firstTest = scrambler(zeros, iniState);
+		firstWithSync = addSync(firstTest, syncWord, 10);
+		firstTrans = trasmission(firstWithSync, syncWord);
+		for(int i=0; i<1500; i++) {
+			test[i] = firstWithSync[i] - firstTrans[i];
+			if(test[i]!=0) {
+				System.out.println("Błąd nastąpił na pozycji: "+i);
+				mistakes++;
+			}
+		}
+		System.out.println("Procent błędów wynosi: " + mistakes/firstWithSync.length*100);
+	}	
+	
+	public static int[] addSync(int[] firstTest, int[] syncWord, int k) {
+		int testLen = firstTest.length; //długość naszego dotychczasowego ciągu bitów
+		int syncLen = syncWord.length;  //długość klucza synchronizującego 
+		int len = (int) (testLen+Math.floor(testLen/k)*syncLen); //długość naszego nowego ciągu bitów
+		int[] bitsWithSync = new int[len];
+		int counter = 0;	//licznik sprawdzający czy należy dorzucić klucz
+		int counter_i = 0;	//licznik nowego ciągu
+		for(int i=0; i<len; i++)
+			bitsWithSync[i] = 0;
+		
+		for(int i=0; i<testLen; i++) {
+			bitsWithSync[counter_i] = firstTest[i]; //przepisujemy bity z dotychczasowego ciągu
+			counter++;
+			counter_i++;
+			if(counter%k==0) { //teraz wstawiamy klucz
+				for(int j=0; j<syncLen; j++) {
+					bitsWithSync[counter_i] = syncWord[j];
+					counter_i++;
+				}
+			}
+		}
+		
+		return bitsWithSync;
+	}
+}
